@@ -1,30 +1,94 @@
-# (Senior) Fullstack Engineer (m/w/d) @OofOne Takehome
+# Requirements
+Run `docker compose up -d` to start the postgresql database server.
 
-As part of our application process, we'd like to see you approach to technical challenges by giving you a small assignment that resembels the challenges awaiting you once you join OofOne. It should take you no more than a few hours to complete the assignment, but any extra polish or features you might want to put in will not go unnoticed.
+# Go Implementation
+## Starting
+Use `go build main.go && ./main` to build and run the application. 
+The database server should be running at this point.
+Database migrations will be executed automatically.
 
-## [](https://github.com/OofOne-SE/senior-software-engineer-takehome#the-assignment)The assignment
+## Testing
+The database is required to run and migrations should be already applied once before running the tests.
+Run `go test` to run integration test suite.
 
-You will find two files in this repository (besides this `README`): `columns.yaml` and `weather.dat`.
-`weather.dat` contains mock weather data collected over several months. `columns.yaml` contains the headers for the given data.
+> Warning: Database gets wiped during testing
 
-Your task is to develop a small API using Go that works with the data as if it was realtime data.
-Write a small programm in the scripting language of your choice that iterates over the rows in the data file and sends them to an endpoint of yours one by one.
-The endpoint should accept the raw data and store it in a structured manner.
 
-Please also create endpoints to:
-- Retrieve the weather data for a given day
-- Retrieve the weather data for a range of days
-- Expose a websocket connection that transmits the latest data
+# Rust Implementation
+[Install cargo (& rust toolchain)](https://www.rust-lang.org/tools/install). 
+`libpq` as a driver for the postgres database client may also be required.
+The Rust Implementation doesn't run any migrations, instead it requires the same schema as the Go implementation. 
+So run the Go migrations first.
+Run the application with `cargo run` and tests with `cargo test`.
+Both APIs are compatible.
 
-Write tests as you find necessary and add simple documentation.
-Use any database.
+Configure the database connection via:
+```
+export DATABASE_URL=postgres://postgres:postgres@localhost/postgres
+```
 
-Consider the case that the data stream might increase in frequency in the future and the application will need to store larger amounts of data.
+# Emmit Script
+The emmit script uses `uv` as its project management tool.
+Install `uv` and execute the script with `uv run emmit.py`.
+A web server should be running, otherwise the script won't work.
 
-## [](https://github.com/OofOne-SE/senior-software-engineer-takehome#requirements)Requirements
+# Endpoints
+## POST `/submit`
+Creates a new entry for the weather at a specific day.
 
-You may choose whatever technologies you prefer, the only requirement is Go as the backend language.
+> If there is an entry for the specific day already, an update will be performed.
 
-If you have any questions, please ask!
+Example Payload:
+```json
+{
+    "date": "2022-01-01",
+    "temperature": 32.2,
+    "humidity": 2.1
+}
+```
 
-To complete your takehome, please fork this repo and commit your work to your fork. When you are ready for us to look at it, give us access to your fork so we can review and run it.
+## GET `/day?day=<day>`
+Returns the data for a specific day, if there is no data at specified date, the request will fail.
+
+`/day?day=2022-01-01`  
+
+Returns:
+```json
+{
+    "date": "2022-01-01T00:00:00Z",
+    "temperature": 32.2,
+    "humidity": 2.1
+}
+```
+
+
+## GET `/range?start=<start>&end=<end>`
+Returns a range of days between `start` and `end` including `start` and `end` dates. 
+If there is no data for the specified range, an empty array will be returned. 
+If there are gaps in the dataset, the endpoint will return every datapoint available and skip said gaps in the response.
+
+`/range?start=2022-01-01&end=2022-01-04`  
+
+Returns:
+```json
+[
+    {
+        "date": "2022-01-01T00:00:00Z",
+        "temperature": 32.2,
+        "humidity": 2.1
+    },
+    {
+        "date": "2022-01-03T00:00:00Z",
+        "temperature": 12.2,
+        "humidity": 23.1
+    }
+]
+```
+
+## WS `/updates`
+Connects to a websocket connection which will notify clients about new measurements submitted via the `/submit` endpoint.
+
+Example Payload:
+```json
+{"date":"2022-01-09T00:00:00Z","temperature":12.2,"humidity":23.1}
+```

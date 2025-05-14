@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM measurements WHERE time >= $1 AND time <= $2 ORDER BY time ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "time",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "temperature",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 2,
+        "name": "humidity",
+        "type_info": "Float4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamp",
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e61c819198a6187257daf091f9dfa9ce833bddb4d3facaf02505f63f7c2c1d95"
+}

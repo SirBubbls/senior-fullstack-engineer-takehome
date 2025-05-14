@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO measurements (time, temperature, humidity) VALUES ($1, $2, $3) ON CONFLICT (time) DO UPDATE SET humidity=excluded.humidity, temperature=excluded.temperature",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamp",
+        "Float4",
+        "Float4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4912fe8d033ef267af0b65e4f325300288ccc80c0484202abb5ca69150faeb85"
+}
