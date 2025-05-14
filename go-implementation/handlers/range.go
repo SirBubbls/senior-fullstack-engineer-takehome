@@ -34,6 +34,9 @@ func (app *AppContext) GetWeatherForRange(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if data == nil {
+		data = []models.Weather{}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
